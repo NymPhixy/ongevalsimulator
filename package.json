@@ -2,6 +2,7 @@
   "name": "aframe-ongeval-simulatie",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -10,5 +11,8 @@
   },
   "devDependencies": {
     "vite": "^5.0.0"
+  },
+  "dependencies": {
+    "aframe": "^1.7.1"
   }
 }
