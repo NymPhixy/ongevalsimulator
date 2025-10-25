@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Ongevalsimulator Configuratie</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        nav {
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+            display: flex;
+            gap: 0;
+        }
+
+        .nav-btn {
+            flex: 1;
+            padding: 15px 20px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #495057;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .nav-btn:hover {
+            background: #e9ecef;
+        }
+
+        .nav-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            background: white;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .step-card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+
+        .step-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+        }
+
+        .step-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .step-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #212529;
+        }
+
+        .step-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        input[type="text"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .choice-item {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+
+        .choice-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #212529;
+        }
+
+        .actions-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .info-box h3 {
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            margin-top: 10px;
+        }
+
+        .step-type-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .badge-question {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .badge-instruction {
+            background: #17a2b8;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎮 Ongevalsimulator Admin</h1>
+            <p class="subtitle">Configureer stappen, vragen en interacties</p>
+        </header>
+
+        <nav>
+            <button class="nav-btn active" data-tab="steps">Stappen beheren</button>
+            <button class="nav-btn" data-tab="phone">Telefoon configuratie</button>
+            <button class="nav-btn" data-tab="export">Export / Import</button>
+        </nav>
+
+        <div class="content">
+            <!-- Steps Tab -->
+            <div id="steps" class="tab-content active">
+                <div class="actions-bar">
+                    <button class="btn btn-primary" onclick="addNewStep()">➕ Nieuwe stap toevoegen</button>
+                    <button class="btn btn-success" onclick="saveConfig()">💾 Opslaan</button>
+                    <button class="btn btn-secondary" onclick="previewSimulation()">👁️ Preview</button>
+                </div>
+
+                <div class="info-box">
+                    <h3>📋 Instructies</h3>
+                    <p>Klik op "Bewerken" om een stap aan te passen. Sleep stappen om de volgorde te wijzigen. Klik op "Opslaan" om de wijzigingen op te slaan naar het configuratiebestand.</p>
+                </div>
+
+                <div id="steps-list"></div>
+            </div>
+
+            <!-- Phone Tab -->
+            <div id="phone" class="tab-content">
+                <div class="actions-bar">
+                    <button class="btn btn-success" onclick="savePhoneConfig()">💾 Opslaan</button>
+                </div>
+
+                <div class="form-group">
+                    <label>Noodnummer</label>
+                    <input type="text" id="emergency-number" value="112">
+                </div>
+
+                <div class="form-group">
+                    <label>Bericht bij verkeerd nummer</label>
+                    <input type="text" id="invalid-message" value="112 centrale: Ongeldig nummer. Probeer opnieuw.">
+                </div>
+
+                <h3 style="margin: 30px 0 15px;">Telefoonscript</h3>
+                <div id="phone-prompts"></div>
+                <button class="btn btn-primary" onclick="addPhonePrompt()">➕ Prompt toevoegen</button>
+            </div>
+
+            <!-- Export/Import Tab -->
+            <div id="export" class="tab-content">
+                <div class="info-box">
+                    <h3>💾 Export & Import</h3>
+                    <p>Exporteer je configuratie als JSON bestand of importeer een eerder opgeslagen configuratie.</p>
+                </div>
+
+                <div class="actions-bar">
+                    <button class="btn btn-primary" onclick="exportConfig()">⬇️ Download configuratie</button>
+                    <button class="btn btn-secondary" onclick="document.getElementById('import-file').click()">⬆️ Import configuratie</button>
+                    <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importConfig(event)">
+                </div>
+
+                <h3 style="margin: 30px 0 15px;">Huidige configuratie</h3>
+                <div class="code-block" id="config-preview"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Step Modal -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">Stap bewerken</div>
+            <div id="edit-form"></div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn btn-primary" onclick="saveStep()">Opslaan</button>
+                <button class="btn btn-secondary" onclick="closeModal()">Annuleren</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { STEPS_CONFIG, PHONE_CONFIG } from '../src/config/stepsConfig.js';
+
+        let currentConfig = [...STEPS_CONFIG];
+        let phoneConfig = { ...PHONE_CONFIG };
+        let editingStepIndex = null;
+
+        // Tab switching
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tab = btn.dataset.tab;
+                
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+                document.getElementById(tab).classList.add('active');
+                
+                if (tab === 'export') {
+                    updateConfigPreview();
+                }
+            });
+        });
+
+        function renderSteps() {
+            const container = document.getElementById('steps-list');
+            container.innerHTML = currentConfig.map((step, index) => `
+                <div class="step-card" draggable="true" data-index="${index}">
+                    <div class="step-header">
+                        <div>
+                            <span class="step-title">${step.title}</span>
+                            <span class="step-type-badge badge-${step.type}">${step.type}</span>
+                        </div>
+                        <div class="step-actions">
+                            <button class="btn btn-secondary" onclick="editStep(${index})">✏️ Bewerken</button>
+                            <button class="btn btn-danger" onclick="deleteStep(${index})">🗑️ Verwijderen</button>
+                        </div>
+                    </div>
+                    <p style="color: #6c757d; margin-top: 10px;">${step.content || step.question || ''}</p>
+                </div>
+            `).join('');
+        }
+
+        window.editStep = (index) => {
+            editingStepIndex = index;
+            const step = currentConfig[index];
+            const modal = document.getElementById('edit-modal');
+            const form = document.getElementById('edit-form');
+            
+            form.innerHTML = `
+                <div class="form-group">
+                    <label>Titel</label>
+                    <input type="text" id="step-title" value="${step.title}">
+                </div>
+                <div class="form-group">
+                    <label>Type</label>
+                    <select id="step-type">
+                        <option value="instruction" ${step.type === 'instruction' ? 'selected' : ''}>Instructie</option>
+                        <option value="question" ${step.type === 'question' ? 'selected' : ''}>Vraag</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Inhoud / Vraag</label>
+                    <textarea id="step-content">${step.content || step.question || ''}</textarea>
+                </div>
+            `;
+            
+            modal.classList.add('active');
+        };
+
+        window.saveStep = () => {
+            const title = document.getElementById('step-title').value;
+            const type = document.getElementById('step-type').value;
+            const content = document.getElementById('step-content').value;
+            
+            currentConfig[editingStepIndex] = {
+                ...currentConfig[editingStepIndex],
+                title,
+                type,
+                [type === 'question' ? 'question' : 'content']: content
+            };
+            
+            renderSteps();
+            closeModal();
+        };
+
+        window.closeModal = () => {
+            document.getElementById('edit-modal').classList.remove('active');
+        };
+
+        window.deleteStep = (index) => {
+            if (confirm('Weet je zeker dat je deze stap wilt verwijderen?')) {
+                currentConfig.splice(index, 1);
+                renderSteps();
+            }
+        };
+
+        window.addNewStep = () => {
+            currentConfig.push({
+                id: currentConfig.length + 1,
+                title: "Nieuwe stap",
+                type: "instruction",
+                content: "Beschrijving...",
+                buttons: []
+            });
+            renderSteps();
+        };
+
+        window.saveConfig = () => {
+            const configCode = `export const STEPS_CONFIG = ${JSON.stringify(currentConfig, null, 2)};`;
+            
+            // In a real app, this would save to the file system via a backend API
+            alert('💾 Configuratie opgeslagen!\n\nKopieer de onderstaande code naar src/config/stepsConfig.js:\n\n' + configCode.substring(0, 200) + '...');
+            console.log(configCode);
+        };
+
+        window.exportConfig = () => {
+            const config = {
+                steps: currentConfig,
+                phone: phoneConfig,
+                exportDate: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'ongevalsimulator-config.json';
+            a.click();
+        };
+
+        window.importConfig = (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const config = JSON.parse(e.target.result);
+                        currentConfig = config.steps || config;
+                        phoneConfig = config.phone || phoneConfig;
+                        renderSteps();
+                        alert('✅ Configuratie geïmporteerd!');
+                    } catch (err) {
+                        alert('❌ Fout bij importeren: ' + err.message);
+                    }
+                };
+                reader.readAsText(file);
+            }
+        };
+
+        function updateConfigPreview() {
+            document.getElementById('config-preview').textContent = JSON.stringify({
+                steps: currentConfig,
+                phone: phoneConfig
+            }, null, 2);
+        }
+
+        window.previewSimulation = () => {
+            window.open('../index.html', '_blank');
+        };
+
+        // Initialize
+        renderSteps();
+        updateConfigPreview();
+    </script>
+</body>
+</html>

@@ -1,15 +1,50 @@
-// public/main.js
-// Minimal entry module for Vite. Add actual app logic here.
-// Import A-Frame from the npm package so Vite can pre-bundle it.
-import "aframe";
+/**
+ * Main Entry Point
+ * Initializes the accident simulation application
+ */
 
-console.log("public/main.js loaded");
+import "../src/styles/main.css";
+import { GameController } from "../src/GameController.js";
 
-// Example: bind an overlay start button if present
-document.addEventListener("DOMContentLoaded", () => {
-  // Placeholder for project-specific initialization
+// Register components immediately when module loads, before A-Frame scene initializes
+console.log("📦 Main.js loaded, waiting for AFRAME...");
+
+// Wait for AFRAME to be available (it's loaded via CDN script tag)
+function waitForAFrame() {
+  return new Promise((resolve) => {
+    if (window.AFRAME) {
+      resolve();
+    } else {
+      const checkInterval = setInterval(() => {
+        if (window.AFRAME) {
+          clearInterval(checkInterval);
+          resolve();
+        }
+      }, 50);
+    }
+  });
+}
+
+waitForAFrame().then(() => {
+  console.log("✅ AFRAME loaded, initializing game controller early...");
+  
+  // Initialize game controller BEFORE scene loads so components are registered
+  const game = new GameController();
+  
+  // Make game controller available globally
+  window.gameController = game;
+  
+  // Now wait for scene to be ready and start the game
   const scene = document.querySelector("a-scene");
+  
   if (scene) {
-    console.log("A-Frame scene found");
+    scene.addEventListener('loaded', () => {
+      console.log("🎮 A-Frame scene loaded successfully");
+      game.start();
+      console.log("✅ Game started");
+    });
+  } else {
+    console.error("❌ A-Frame scene not found!");
   }
 });
+

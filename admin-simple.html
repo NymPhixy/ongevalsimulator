@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Ongevalsimulator</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+        }
+        
+        h1 { font-size: 32px; margin-bottom: 5px; }
+        .subtitle { opacity: 0.9; }
+        
+        .toolbar {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary { background: #667eea; color: white; }
+        .btn-primary:hover { background: #5568d3; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-success:hover { background: #218838; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-danger:hover { background: #c82333; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover { background: #5a6268; }
+        
+        .content { padding: 30px; }
+        
+        .steps-grid {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .step-card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+        
+        .step-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        }
+        
+        .step-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+        
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        
+        .step-title {
+            flex: 1;
+            margin: 0 15px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .step-type {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            background: #17a2b8;
+            color: white;
+        }
+        
+        .step-type.question { background: #ffc107; color: #000; }
+        
+        .step-content {
+            color: #6c757d;
+            margin-top: 10px;
+            line-height: 1.5;
+        }
+        
+        .step-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .modal.active { display: flex; }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 700px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        input[type="text"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 14px;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .choice-list {
+            margin-top: 15px;
+        }
+        
+        .choice-item {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+        
+        .choice-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .json-editor {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            white-space: pre;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎮 Ongevalsimulator Admin</h1>
+            <p class="subtitle">Beheer stappen en configuratie</p>
+        </header>
+        
+        <div class="toolbar">
+            <button class="btn btn-primary" onclick="addStep()">➕ Nieuwe stap</button>
+            <button class="btn btn-success" onclick="saveConfig()">💾 Opslaan</button>
+            <button class="btn btn-secondary" onclick="downloadConfig()">⬇️ Download JSON</button>
+            <button class="btn btn-secondary" onclick="document.getElementById('uploadInput').click()">⬆️ Upload JSON</button>
+            <input type="file" id="uploadInput" accept=".json" style="display:none" onchange="loadConfig(event)">
+            <button class="btn btn-secondary" onclick="window.open('/index.html', '_blank')">👁️ Preview</button>
+        </div>
+        
+        <div class="content">
+            <div class="alert alert-info">
+                <strong>💡 Tip:</strong> Bewerk stappen door op "Edit" te klikken. Sleep stappen om de volgorde te wijzigen. Download de JSON wanneer je klaar bent.
+            </div>
+            
+            <div id="stepsList" class="steps-grid"></div>
+        </div>
+    </div>
+    
+    <!-- Edit Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header" id="modalTitle">Stap bewerken</div>
+            <div id="editForm"></div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn btn-primary" onclick="saveStep()">Opslaan</button>
+                <button class="btn btn-secondary" onclick="closeModal()">Annuleren</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let config = { steps: [], phone: {} };
+        let editingIndex = null;
+        
+        // Load initial config
+        async function init() {
+            try {
+                const response = await fetch('/config.json');
+                config = await response.json();
+                renderSteps();
+            } catch (error) {
+                console.error('Error loading config:', error);
+                config = { steps: [], phone: { emergencyNumber: "112" } };
+                renderSteps();
+            }
+        }
+        
+        function renderSteps() {
+            const container = document.getElementById('stepsList');
+            container.innerHTML = config.steps.map((step, index) => `
+                <div class="step-card" draggable="true" data-index="${index}">
+                    <div class="step-header">
+                        <div class="step-number">${step.id}</div>
+                        <div class="step-title">${escapeHtml(step.title)}</div>
+                        <span class="step-type ${step.type}">${step.type}</span>
+                    </div>
+                    <div class="step-content">
+                        ${escapeHtml((step.content || step.question || '').substring(0, 150))}...
+                    </div>
+                    <div class="step-actions">
+                        <button class="btn btn-secondary" onclick="editStep(${index})">✏️ Edit</button>
+                        <button class="btn btn-danger" onclick="deleteStep(${index})">🗑️ Delete</button>
+                        ${index > 0 ? `<button class="btn btn-secondary" onclick="moveStep(${index}, -1)">↑</button>` : ''}
+                        ${index < config.steps.length - 1 ? `<button class="btn btn-secondary" onclick="moveStep(${index}, 1)">↓</button>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function addStep() {
+            config.steps.push({
+                id: config.steps.length + 1,
+                title: "Nieuwe stap",
+                type: "instruction",
+                content: "Beschrijving...",
+                buttons: [{ text: "Verder", action: "nextStep", style: "good" }]
+            });
+            renderSteps();
+        }
+        
+        function editStep(index) {
+            editingIndex = index;
+            const step = config.steps[index];
+            const modal = document.getElementById('editModal');
+            const form = document.getElementById('editForm');
+            
+            let html = `
+                <div class="form-group">
+                    <label>Titel</label>
+                    <input type="text" id="stepTitle" value="${escapeHtml(step.title)}">
+                </div>
+                <div class="form-group">
+                    <label>Type</label>
+                    <select id="stepType" onchange="updateEditForm()">
+                        <option value="instruction" ${step.type === 'instruction' ? 'selected' : ''}>Instructie</option>
+                        <option value="question" ${step.type === 'question' ? 'selected' : ''}>Vraag</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>${step.type === 'question' ? 'Vraag' : 'Inhoud'}</label>
+                    <textarea id="stepContent">${escapeHtml(step.content || step.question || '')}</textarea>
+                </div>
+            `;
+            
+            if (step.type === 'question' && step.choices) {
+                html += `
+                    <div class="form-group">
+                        <label>Antwoorden</label>
+                        <div class="choice-list" id="choicesList">
+                            ${step.choices.map((choice, i) => `
+                                <div class="choice-item">
+                                    <input type="text" value="${escapeHtml(choice.text)}" data-choice="${i}" style="margin-bottom: 8px;">
+                                    <label><input type="checkbox" data-choice-correct="${i}" ${choice.correct ? 'checked' : ''}> Correct antwoord</label>
+                                    <input type="text" placeholder="Feedback" value="${escapeHtml(choice.feedback || '')}" data-choice-feedback="${i}" style="margin-top: 8px;">
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            form.innerHTML = html;
+            modal.classList.add('active');
+        }
+        
+        function saveStep() {
+            const step = config.steps[editingIndex];
+            step.title = document.getElementById('stepTitle').value;
+            step.type = document.getElementById('stepType').value;
+            
+            const content = document.getElementById('stepContent').value;
+            if (step.type === 'question') {
+                step.question = content;
+                delete step.content;
+                
+                // Update choices
+                const choiceInputs = document.querySelectorAll('[data-choice]');
+                if (choiceInputs.length > 0 && step.choices) {
+                    choiceInputs.forEach((input, i) => {
+                        if (step.choices[i]) {
+                            step.choices[i].text = input.value;
+                            step.choices[i].correct = document.querySelector(`[data-choice-correct="${i}"]`).checked;
+                            step.choices[i].feedback = document.querySelector(`[data-choice-feedback="${i}"]`).value;
+                        }
+                    });
+                }
+            } else {
+                step.content = content;
+                delete step.question;
+            }
+            
+            renderSteps();
+            closeModal();
+        }
+        
+        function deleteStep(index) {
+            if (confirm('Weet je zeker dat je deze stap wilt verwijderen?')) {
+                config.steps.splice(index, 1);
+                // Renumber
+                config.steps.forEach((step, i) => step.id = i + 1);
+                renderSteps();
+            }
+        }
+        
+        function moveStep(index, direction) {
+            const newIndex = index + direction;
+            if (newIndex >= 0 && newIndex < config.steps.length) {
+                [config.steps[index], config.steps[newIndex]] = [config.steps[newIndex], config.steps[index]];
+                // Renumber
+                config.steps.forEach((step, i) => step.id = i + 1);
+                renderSteps();
+            }
+        }
+        
+        function closeModal() {
+            document.getElementById('editModal').classList.remove('active');
+        }
+        
+        function saveConfig() {
+            localStorage.setItem('simulatorConfig', JSON.stringify(config, null, 2));
+            alert('✅ Configuratie opgeslagen in browser!\n\nOm permanent op te slaan: klik op "Download JSON"');
+        }
+        
+        function downloadConfig() {
+            const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'config.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        function loadConfig(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        config = JSON.parse(e.target.result);
+                        renderSteps();
+                        alert('✅ Configuratie geladen!');
+                    } catch (error) {
+                        alert('❌ Fout bij laden: ' + error.message);
+                    }
+                };
+                reader.readAsText(file);
+            }
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Initialize
+        init();
+    </script>
+</body>
+</html>
