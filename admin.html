@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Ongeval Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #2f80ed;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1b6fd4;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+
+        .step-list {
+            margin-bottom: 30px;
+        }
+
+        .step-item {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: box-shadow 0.2s;
+        }
+
+        .step-item:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .step-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .step-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .step-number {
+            background: #2f80ed;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .step-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .step-actions button {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .step-content {
+            margin-top: 15px;
+        }
+
+        .step-meta {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .step-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .step-meta-item strong {
+            color: #666;
+        }
+
+        .step-meta-item span {
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        .step-description {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #2f80ed;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        .answer-list {
+            margin-top: 15px;
+        }
+
+        .answer-list-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .answer-item {
+            background: #f8f9fa;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            border-left: 4px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .answer-item:hover {
+            background: #f0f1f3;
+        }
+
+        .answer-item.correct {
+            border-left-color: #27ae60;
+            background: #e8f5e9;
+        }
+
+        .answer-item.incorrect {
+            border-left-color: #e74c3c;
+            background: #ffebee;
+        }
+
+        .answer-text {
+            flex: 1;
+            font-size: 14px;
+            color: #2c3e50;
+        }
+
+        .answer-badge {
+            font-size: 18px;
+            margin-left: 10px;
+        }
+
+        .type-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .type-badge.question {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .type-badge.interaction {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .type-badge.completion {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .modal-header h2 {
+            color: #2c3e50;
+            font-size: 24px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: flex-end;
+        }
+
+        .json-editor {
+            margin-top: 30px;
+        }
+
+        .json-editor textarea {
+            min-height: 400px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .status-message {
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .status-message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab-button {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-weight: 600;
+            color: #666;
+        }
+
+        .tab-button.active {
+            color: #2f80ed;
+            border-bottom-color: #2f80ed;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Ongeval Simulator - Admin Panel</h1>
+        
+        <div id="statusMessage" class="status-message"></div>
+
+        <div class="tab-buttons">
+            <button class="tab-button active" onclick="switchTab('visual')">📝 Visual Editor</button>
+            <button class="tab-button" onclick="switchTab('json')">🔧 JSON Editor</button>
+        </div>
+
+        <!-- Visual Editor Tab -->
+        <div id="visualTab" class="tab-content active">
+            <div class="actions">
+                <button class="btn-primary" onclick="addNewStep()">➕ Add New Step</button>
+                <button class="btn-success" onclick="saveConfig()">💾 Save Configuration</button>
+                <button class="btn-secondary" onclick="loadConfig()">🔄 Reload from Server</button>
+                <button class="btn-danger" onclick="resetToDefaults()">⚠️ Reset to Defaults</button>
+            </div>
+
+            <div id="stepList" class="step-list">
+                <!-- Steps will be dynamically loaded here -->
+            </div>
+        </div>
+
+        <!-- JSON Editor Tab -->
+        <div id="jsonTab" class="tab-content">
+            <div class="actions">
+                <button class="btn-success" onclick="saveFromJSON()">💾 Save JSON</button>
+                <button class="btn-secondary" onclick="loadToJSON()">🔄 Load to Editor</button>
+                <button class="btn-primary" onclick="formatJSON()">✨ Format JSON</button>
+            </div>
+
+            <div class="json-editor">
+                <label>Raw JSON Configuration</label>
+                <textarea id="jsonEditor"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Edit Step</h2>
+            </div>
+            <div id="editForm">
+                <!-- Form will be dynamically generated -->
+            </div>
+            <div class="modal-actions">
+                <button class="btn-success" onclick="saveEdit()">💾 Save Changes</button>
+                <button class="btn-secondary" onclick="closeModal()">❌ Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let config = {
+            steps: [],
+            phone: {
+                intro: "Bel 112 en volg de instructies...",
+                questions: []
+            }
+        };
+        
+        let editingStepIndex = null;;
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            if (tab === 'visual') {
+                document.querySelector('.tab-button:nth-child(1)').classList.add('active');
+                document.getElementById('visualTab').classList.add('active');
+            } else {
+                document.querySelector('.tab-button:nth-child(2)').classList.add('active');
+                document.getElementById('jsonTab').classList.add('active');
+                loadToJSON();
+            }
+        }
+
+        function showStatus(message, isError = false) {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.textContent = message;
+            statusEl.className = 'status-message ' + (isError ? 'error' : 'success');
+            statusEl.style.display = 'block';
+            setTimeout(() => {
+                statusEl.style.display = 'none';
+            }, 3000);
+        }
+
+        async function loadConfig() {
+            try {
+                const response = await fetch('/config.json');
+                if (response.ok) {
+                    config = await response.json();
+                    renderSteps();
+                    showStatus('✅ Configuration loaded successfully');
+                } else {
+                    throw new Error('Failed to load config');
+                }
+            } catch (error) {
+                console.error('Error loading config:', error);
+                showStatus('⚠️ Could not load config, using defaults', true);
+                config = getDefaultConfig();
+                renderSteps();
+            }
+        }
+
+        function getDefaultConfig() {
+            return {
+                steps: [
+                    {
+                        id: 1,
+                        type: "interaction",
+                        title: "Stap 1 – Let op je eigen veiligheid",
+                        content: "Situatie: Je ziet een voetganger op de grond liggen. Er rijden nog auto's voorbij.\n\nInteractief: Kijk eerst naar de linker en rechter marker (kijk naar de balletjes) om de weg te checken.",
+                        interaction: "gaze-check"
+                    },
+                    {
+                        id: 2,
+                        type: "question",
+                        title: "Stap 2 – Kijk of de persoon aanspreekbaar is",
+                        question: "Wat is de eerste en beste actie om te controleren of iemand aanspreekbaar is?",
+                        answers: [
+                            {
+                                text: 'A. Je vraagt rustig: "Gaat het met u?"',
+                                correct: true,
+                                feedback: "Juist — rustig spreken is de juiste eerste stap."
+                            },
+                            {
+                                text: "B. Je schudt de persoon stevig aan de schouders",
+                                correct: false,
+                                feedback: "Schudden kan gevaarlijk zijn; probeer eerst verbaal contact."
+                            },
+                            {
+                                text: "C. Je roept in paniek om hulp",
+                                correct: false,
+                                feedback: "Paniek helpt niet; blijf rustig en controleer aanspreekbaarheid."
+                            }
+                        ]
+                    },
+                    {
+                        id: 3,
+                        type: "question",
+                        title: "Stap 3 – Bel 112",
+                        question: "Wat is het beste om nu te doen?",
+                        answers: [
+                            {
+                                text: "A. Je belt 112 en vertelt wat er is gebeurd",
+                                correct: true,
+                                feedback: "Juist — bel 112 en geef locatie en aantal gewonden door."
+                            },
+                            {
+                                text: "B. Je wacht even of hij zelf opstaat",
+                                correct: false,
+                                feedback: "Wachten kost waardevolle tijd; bel altijd bij mogelijk ernstig letsel."
+                            },
+                            {
+                                text: "C. Je zoekt iemand anders die misschien wil bellen",
+                                correct: false,
+                                feedback: "Je kunt iemand vragen, maar jij bent aanwezig — bel direct."
+                            }
+                        ]
+                    },
+                    {
+                        id: 4,
+                        type: "question",
+                        title: "Stap 4 – Geef eerste hulp",
+                        question: "De persoon heeft een bloedende wond. Wat doe je eerst?",
+                        answers: [
+                            {
+                                text: "A. Zoek een EHBO-tas en desinfecteer de wond",
+                                correct: true,
+                                feedback: "Juist — pak de EHBO-tas en gebruik spray en pleister."
+                            },
+                            {
+                                text: "B. Probeer hem wakker te maken door te roepen",
+                                correct: false,
+                                feedback: "De persoon is bewusteloos. Behandel eerst de wond."
+                            },
+                            {
+                                text: "C. Niets, de ambulance komt toch",
+                                correct: false,
+                                feedback: "Je kunt levensreddend zijn met eerste hulp."
+                            }
+                        ]
+                    },
+                    {
+                        id: 5,
+                        type: "question",
+                        title: "Stap 5 – Ambulance is er",
+                        question: "De ambulance is gearriveerd. Wat doe je?",
+                        answers: [
+                            {
+                                text: "A. Blijf bij het slachtoffer",
+                                correct: true,
+                                feedback: "Juist — blijf in de buurt voor extra informatie."
+                            },
+                            {
+                                text: "B. Vertrek meteen",
+                                correct: false,
+                                feedback: "Blijf even, misschien hebben de hulpverleners nog vragen."
+                            }
+                        ]
+                    },
+                    {
+                        id: 6,
+                        type: "completion",
+                        title: "Scenario voltooid!",
+                        content: "Je hebt de basis van eerste hulp bij een ongeval doorlopen:\n1. Eigen veiligheid\n2. Aanspreekbaarheid controleren\n3. 112 bellen\n4. Eerste hulp verlenen\n5. Wachten op ambulance\n6. Blijven en informatie geven\n\nGoed gedaan!"
+                    }
+                ],
+                phone: {
+                    intro: "Bel 112 en volg de instructies...",
+                    questions: [
+                        {
+                            id: 1,
+                            question: "Wat is je locatie?",
+                            answers: [
+                                {text: "A. Weet ik niet precies", correct: false, feedback: "Probeer toch een locatie te geven."},
+                                {text: "B. Oversteekplaats", correct: true}
+                            ]
+                        },
+                        {
+                            id: 2,
+                            question: "Hoeveel gewonden?",
+                            answers: [
+                                {text: "1", correct: true},
+                                {text: "2", correct: false, feedback: "Vertel het correcte aantal."}
+                            ]
+                        }
+                    ]
+                }
+            };
+        }
+
+        function renderSteps() {
+            const container = document.getElementById('stepList');
+            container.innerHTML = '';
+
+            if (config.steps.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 60px 20px; color: #999;">
+                        <h3>No steps configured yet</h3>
+                        <p>Click "Add New Step" to create your first step</p>
+                    </div>
+                `;
+                return;
+            }
+
+            config.steps.forEach((step, index) => {
+                const stepEl = document.createElement('div');
+                stepEl.className = 'step-item';
+                stepEl.innerHTML = `
+                    <div class="step-header">
+                        <div class="step-title">
+                            <span class="step-number">${step.id}</span>
+                            <span>${step.title}</span>
+                        </div>
+                        <div class="step-actions">
+                            <button class="btn-primary" onclick="editStep(${index})" title="Edit step">✏️ Edit</button>
+                            <button class="btn-secondary" onclick="moveStep(${index}, -1)" title="Move up">⬆️</button>
+                            <button class="btn-secondary" onclick="moveStep(${index}, 1)" title="Move down">⬇️</button>
+                            <button class="btn-danger" onclick="deleteStep(${index})" title="Delete step">🗑️</button>
+                        </div>
+                    </div>
+                    <div class="step-content">
+                        <div class="step-meta">
+                            <div class="step-meta-item">
+                                <strong>Type:</strong>
+                                <span class="type-badge ${step.type}">${step.type}</span>
+                            </div>
+                            ${step.interaction ? `
+                                <div class="step-meta-item">
+                                    <strong>Interaction:</strong>
+                                    <span>${step.interaction}</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                        ${step.question ? `
+                            <div class="step-description">
+                                <strong>📝 Question:</strong><br/>
+                                ${step.question}
+                            </div>
+                        ` : ''}
+                        ${step.content ? `
+                            <div class="step-description">
+                                <strong>📄 Content:</strong><br/>
+                                ${step.content.length > 150 ? step.content.substring(0, 150) + '...' : step.content}
+                            </div>
+                        ` : ''}
+                        ${step.answers ? renderAnswerList(step.answers) : ''}
+                    </div>
+                `;
+                container.appendChild(stepEl);
+            });
+        }
+
+        function renderAnswerList(answers) {
+            let html = '<div class="answer-list">';
+            html += '<div class="answer-list-title">💬 Answer Options:</div>';
+            answers.forEach(answer => {
+                html += `
+                    <div class="answer-item ${answer.correct ? 'correct' : 'incorrect'}">
+                        <span class="answer-text">${answer.text}</span>
+                        <span class="answer-badge">${answer.correct ? '✅' : '❌'}</span>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            return html;
+        }
+
+        function addNewStep() {
+            const newStep = {
+                id: config.steps.length + 1,
+                type: "question",
+                title: "New Step",
+                question: "Enter your question here",
+                answers: [
+                    {text: "Answer A", correct: true, feedback: "Correct!"},
+                    {text: "Answer B", correct: false, feedback: "Try again."}
+                ]
+            };
+            config.steps.push(newStep);
+            renderSteps();
+            showStatus('➕ New step added');
+        }
+
+        function editStep(index) {
+            editingStepIndex = index;
+            const step = config.steps[index];
+            
+            document.getElementById('modalTitle').textContent = `Edit Step ${step.id}`;
+            
+            let formHTML = `
+                <div class="form-group">
+                    <label>Step Title</label>
+                    <input type="text" id="editTitle" value="${escapeHtml(step.title)}" placeholder="Enter step title">
+                </div>
+                
+                <div class="form-group">
+                    <label>Step Type</label>
+                    <select id="editType" onchange="updateFormFields()">
+                        <option value="question" ${step.type === 'question' ? 'selected' : ''}>Question</option>
+                        <option value="interaction" ${step.type === 'interaction' ? 'selected' : ''}>Interaction</option>
+                        <option value="completion" ${step.type === 'completion' ? 'selected' : ''}>Completion</option>
+                    </select>
+                </div>
+            `;
+            
+            if (step.type === 'question') {
+                formHTML += `
+                    <div class="form-group">
+                        <label>Question</label>
+                        <textarea id="editQuestion" placeholder="Enter your question">${escapeHtml(step.question || '')}</textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Answers</label>
+                        <div id="answersList">
+                `;
+                
+                if (step.answers) {
+                    step.answers.forEach((answer, i) => {
+                        formHTML += `
+                            <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: start;">
+                                <input type="text" id="answerText${i}" value="${escapeHtml(answer.text)}" 
+                                       placeholder="Answer text" style="flex: 1;">
+                                <select id="answerCorrect${i}" style="width: 120px;">
+                                    <option value="true" ${answer.correct ? 'selected' : ''}>Correct ✅</option>
+                                    <option value="false" ${!answer.correct ? 'selected' : ''}>Incorrect ❌</option>
+                                </select>
+                                <input type="text" id="answerFeedback${i}" value="${escapeHtml(answer.feedback || '')}" 
+                                       placeholder="Feedback" style="flex: 1;">
+                            </div>
+                        `;
+                    });
+                }
+                
+                formHTML += `
+                        </div>
+                        <button class="btn-primary" onclick="addAnswer()" style="margin-top: 10px;">➕ Add Answer</button>
+                    </div>
+                `;
+            } else if (step.type === 'interaction') {
+                formHTML += `
+                    <div class="form-group">
+                        <label>Content / Instructions</label>
+                        <textarea id="editContent" placeholder="Enter instructions or content">${escapeHtml(step.content || '')}</textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Interaction Type</label>
+                        <input type="text" id="editInteraction" value="${escapeHtml(step.interaction || '')}" 
+                               placeholder="e.g., gaze-check">
+                    </div>
+                `;
+            } else if (step.type === 'completion') {
+                formHTML += `
+                    <div class="form-group">
+                        <label>Completion Message</label>
+                        <textarea id="editContent" placeholder="Enter completion message">${escapeHtml(step.content || '')}</textarea>
+                    </div>
+                `;
+            }
+            
+            document.getElementById('editForm').innerHTML = formHTML;
+            document.getElementById('editModal').classList.add('active');
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function closeModal() {
+            document.getElementById('editModal').classList.remove('active');
+            editingStepIndex = null;
+        }
+        
+        function saveEdit() {
+            if (editingStepIndex === null) return;
+            
+            const step = config.steps[editingStepIndex];
+            step.title = document.getElementById('editTitle').value;
+            step.type = document.getElementById('editType').value;
+            
+            if (step.type === 'question') {
+                step.question = document.getElementById('editQuestion').value;
+                
+                // Update answers
+                const answersCount = step.answers ? step.answers.length : 0;
+                step.answers = [];
+                for (let i = 0; i < answersCount; i++) {
+                    const textEl = document.getElementById(`answerText${i}`);
+                    if (textEl && textEl.value) {
+                        step.answers.push({
+                            text: textEl.value,
+                            correct: document.getElementById(`answerCorrect${i}`).value === 'true',
+                            feedback: document.getElementById(`answerFeedback${i}`).value
+                        });
+                    }
+                }
+            } else if (step.type === 'interaction') {
+                step.content = document.getElementById('editContent').value;
+                step.interaction = document.getElementById('editInteraction').value;
+            } else if (step.type === 'completion') {
+                step.content = document.getElementById('editContent').value;
+            }
+            
+            closeModal();
+            renderSteps();
+            showStatus('✅ Step updated successfully');
+        }
+        
+        function addAnswer() {
+            const step = config.steps[editingStepIndex];
+            if (!step.answers) step.answers = [];
+            step.answers.push({
+                text: 'New answer',
+                correct: false,
+                feedback: ''
+            });
+            editStep(editingStepIndex);
+        }
+
+        function deleteStep(index) {
+            if (confirm('Are you sure you want to delete this step?')) {
+                config.steps.splice(index, 1);
+                // Renumber steps
+                config.steps.forEach((step, i) => step.id = i + 1);
+                renderSteps();
+                showStatus('🗑️ Step deleted');
+            }
+        }
+
+        function moveStep(index, direction) {
+            const newIndex = index + direction;
+            if (newIndex < 0 || newIndex >= config.steps.length) return;
+            
+            [config.steps[index], config.steps[newIndex]] = [config.steps[newIndex], config.steps[index]];
+            // Renumber
+            config.steps.forEach((step, i) => step.id = i + 1);
+            renderSteps();
+            showStatus('↕️ Step moved');
+        }
+
+        async function saveConfig() {
+            try {
+                // In a real app, this would POST to a server endpoint
+                // For now, we'll show the JSON that should be saved
+                const json = JSON.stringify(config, null, 2);
+                console.log('Configuration to save:', json);
+                
+                // Trigger download
+                const blob = new Blob([json], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'config.json';
+                a.click();
+                
+                showStatus('💾 Configuration saved! (Downloaded as config.json)');
+            } catch (error) {
+                console.error('Error saving config:', error);
+                showStatus('❌ Error saving configuration', true);
+            }
+        }
+
+        function resetToDefaults() {
+            if (confirm('This will reset all configuration to defaults. Are you sure?')) {
+                config = getDefaultConfig();
+                renderSteps();
+                showStatus('⚠️ Reset to defaults');
+            }
+        }
+
+        function loadToJSON() {
+            document.getElementById('jsonEditor').value = JSON.stringify(config, null, 2);
+        }
+
+        function saveFromJSON() {
+            try {
+                const json = document.getElementById('jsonEditor').value;
+                config = JSON.parse(json);
+                renderSteps();
+                showStatus('💾 JSON loaded successfully');
+                switchTab('visual');
+            } catch (error) {
+                showStatus('❌ Invalid JSON: ' + error.message, true);
+            }
+        }
+
+        function formatJSON() {
+            try {
+                const json = document.getElementById('jsonEditor').value;
+                const parsed = JSON.parse(json);
+                document.getElementById('jsonEditor').value = JSON.stringify(parsed, null, 2);
+                showStatus('✨ JSON formatted');
+            } catch (error) {
+                showStatus('❌ Invalid JSON: ' + error.message, true);
+            }
+        }
+
+        // Load config on page load
+        loadConfig();
+    </script>
+</body>
+</html>
