@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="nl">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="description" content="Interactieve ongevalsimulatie voor EHBO training">
+    <title>Ongeval Simulatie — A-Frame</title>
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script type="module" src="/main.js"></script>
+</head>
+
+<body>
+    <!-- UI Elements -->
+    <div id="panel" role="dialog" aria-live="polite">
+        <div id="message"></div>
+        <div id="ui" role="group"></div>
+    </div>
+
+    <button id="reset" class="btn" aria-label="Reset simulatie">Reset</button>
+    <button id="readQuestion" aria-label="Lees huidige vraag">Lees vraag</button>
+    <button id="enterVR" class="btn" aria-label="Speel in VR">Speel in VR</button>
+
+    <!-- Phone Interface -->
+    <div id="phone" role="dialog" aria-label="Telefoon interface">
+        <div id="phoneScreen" aria-live="polite">112 centrale: Wat is uw noodmelding?</div>
+        <div id="phoneChoices" role="group"></div>
+    </div>
+
+    <!-- A-Frame Scene -->
+    <a-scene collision-check background="color: #aed9ff" loading-screen="enabled: true">
+        <!-- Camera: spawn opposite of victim -->
+        <a-entity id="cameraRig" position="0 0 6">
+            <a-entity camera look-controls wasd-controls position="0 1.6 0">
+                <a-entity cursor="fuse: true; fuseTimeout: 900" raycaster="objects: .interactable, .gazeTarget"
+                    position="0 0 -1" geometry="primitive: ring; radiusInner: 0.01; radiusOuter: 0.02"
+                    material="color: black; shader: flat">
+                </a-entity>
+            </a-entity>
+        </a-entity>
+
+        <!-- Road infrastructure -->
+        <a-plane rotation="-90 0 0" width="14" height="40" color="#262626" position="0 0.01 0"></a-plane>
+
+        <!-- Sidewalks -->
+        <a-box position="-4.6 0.05 0" width="3.2" depth="40" height="0.1" color="#e6e9ec"></a-box>
+        <a-box position="4.6 0.05 0" width="3.2" depth="40" height="0.1" color="#e6e9ec"></a-box>
+
+        <!-- Curbs -->
+        <a-box position="-3.05 0.12 -10" width="0.2" depth="40" height="0.14" color="#bfc9cf"></a-box>
+        <a-box position="3.05 0.12 -10" width="0.2" depth="40" height="0.14" color="#bfc9cf"></a-box>
+
+        <!-- Center dashed line -->
+        <a-entity id="dashed-line">
+            <a-box position="0 0.031 -18" width="0.12" depth="2.2" height="0.02" color="#ffffff"
+                material="opacity:0.85"></a-box>
+            <a-box position="0 0.031 -14" width="0.12" depth="2.2" height="0.02" color="#ffffff"
+                material="opacity:0.85"></a-box>
+            <a-box position="0 0.031 -10" width="0.12" depth="2.2" height="0.02" color="#ffffff"
+                material="opacity:0.85"></a-box>
+            <a-box position="0 0.031 -6" width="0.12" depth="2.2" height="0.02" color="#ffffff"
+                material="opacity:0.85"></a-box>
+            <a-box position="0 0.031 -2" width="0.12" depth="2.2" height="0.02" color="#ffffff"
+                material="opacity:0.85"></a-box>
+            <a-box position="0 0.031 2" width="0.12" depth="2.2" height="0.02" color="#ffffff"
+                material="opacity:0.85"></a-box>
+            <a-box position="0 0.031 6" width="0.12" depth="2.2" height="0.02" color="#ffffff"
+                material="opacity:0.85"></a-box>
+            <a-box position="0 0.031 10" width="0.12" depth="2.2" height="0.02" color="#ffffff"
+                material="opacity:0.85"></a-box>
+            <a-box position="0 0.031 14" width="0.12" depth="2.2" height="0.02" color="#ffffff"
+                material="opacity:0.85"></a-box>
+        </a-entity>
+
+        <!-- Grassy verges -->
+        <a-plane rotation="-90 0 0" width="40" height="10" color="#7fcf6f" position="0 0 -28"></a-plane>
+
+        <!-- Street lamps -->
+        <a-entity id="lamps">
+            <!-- Left side -->
+            <a-entity position="-4.6 0 -8">
+                <a-cylinder radius="0.05" height="2.2" color="#3b3b3b" position="0 1.1 0"></a-cylinder>
+                <a-sphere position="0 2.12 0" radius="0.16" color="#fff7d1"
+                    material="emissive: #fff7d1; emissiveIntensity: 1"></a-sphere>
+                <a-light type="point" color="#fff7d1" intensity="1.4" distance="8" position="0 2.12 0"></a-light>
+            </a-entity>
+            <a-entity position="-4.6 0 -2">
+                <a-cylinder radius="0.05" height="2.2" color="#3b3b3b" position="0 1.1 0"></a-cylinder>
+                <a-sphere position="0 2.12 0" radius="0.16" color="#fff7d1"
+                    material="emissive: #fff7d1; emissiveIntensity: 1"></a-sphere>
+                <a-light type="point" color="#fff7d1" intensity="1.4" distance="8" position="0 2.12 0"></a-light>
+            </a-entity>
+
+            <!-- Right side -->
+            <a-entity position="4.6 0 8">
+                <a-cylinder radius="0.05" height="2.2" color="#3b3b3b" position="0 1.1 0"></a-cylinder>
+                <a-sphere position="0 2.12 0" radius="0.16" color="#fff7d1"
+                    material="emissive: #fff7d1; emissiveIntensity: 1"></a-sphere>
+                <a-light type="point" color="#fff7d1" intensity="1.4" distance="8" position="0 2.12 0"></a-light>
+            </a-entity>
+            <a-entity position="4.6 0 2">
+                <a-cylinder radius="0.05" height="2.2" color="#3b3b3b" position="0 1.1 0"></a-cylinder>
+                <a-sphere position="0 2.12 0" radius="0.16" color="#fff7d1"
+                    material="emissive: #fff7d1; emissiveIntensity: 1"></a-sphere>
+                <a-light type="point" color="#fff7d1" intensity="1.4" distance="8" position="0 2.12 0"></a-light>
+            </a-entity>
+        </a-entity>
+
+        <!-- Buildings -->
+        <a-box position="-9 1.3 10" width="6" height="2.6" depth="6" color="#2f4b60"></a-box>
+        <a-box position="-9 1.2 14" width="4" height="2.4" depth="5" color="#3b7a9e"></a-box>
+        <a-box position="-9 1.2 18" width="5" height="2.4" depth="6" color="#6c7a89"></a-box>
+        <a-box position="9 1.3 12" width="6" height="2.6" depth="5" color="#4a6a7a"></a-box>
+        <a-box position="9 1.1 8" width="5" height="2.2" depth="4" color="#2b3b45"></a-box>
+
+        <!-- Car (starts far away) -->
+        <a-entity id="car" position="0 0 -25" rotation="0 0 0">
+            <a-box depth="2" height="0.6" width="1.2" color="#c0392b" position="0 0.6 0"></a-box>
+            <a-box depth="1.2" height="0.4" width="1" color="#e74c3c" position="0 1.0 0"></a-box>
+            <a-cylinder radius="0.3" height="0.2" color="#2c3e50" rotation="90 0 0" position="0.6 0.3 0.9"></a-cylinder>
+            <a-cylinder radius="0.3" height="0.2" color="#2c3e50" rotation="90 0 0"
+                position="-0.6 0.3 0.9"></a-cylinder>
+            <a-cylinder radius="0.3" height="0.2" color="#2c3e50" rotation="90 0 0"
+                position="0.6 0.3 -0.9"></a-cylinder>
+            <a-cylinder radius="0.3" height="0.2" color="#2c3e50" rotation="90 0 0"
+                position="-0.6 0.3 -0.9"></a-cylinder>
+        </a-entity>
+
+        <!-- Victim (person) -->
+        <a-entity id="person" position="0 0 0">
+            <a-cylinder id="body" radius="0.28" height="0.9" color="#e0a66f" position="0 0.55 0"></a-cylinder>
+            <a-sphere radius="0.22" color="#f0c090" position="0 1.15 0"></a-sphere>
+            <a-cylinder radius="0.06" height="0.7" color="#e0a66f" position="-0.38 0.8 0"
+                rotation="0 0 45"></a-cylinder>
+            <a-cylinder radius="0.06" height="0.7" color="#e0a66f" position="0.38 0.8 0"
+                rotation="0 0 -45"></a-cylinder>
+            <a-cylinder radius="0.07" height="0.8" color="#34495e" position="-0.12 0.1 0"></a-cylinder>
+            <a-cylinder radius="0.07" height="0.8" color="#34495e" position="0.12 0.1 0"></a-cylinder>
+            <a-box width="0.6" height="0.05" depth="0.4" color="#2c3e50" position="0 0.75 0"></a-box>
+            <a-sphere id="wound" radius="0.12" color="#c0392b" position="0 0.95 0.22"></a-sphere>
+        </a-entity>
+
+        <!-- First aid kit -->
+        <a-box id="ehbo" width="0.45" height="0.22" depth="0.3" color="#e74c3c" position="0.8 0 1.2"
+            visible="false"></a-box>
+
+        <!-- First aid items -->
+        <a-cylinder id="spray" radius="0.12" height="0.4" color="#3498db" position="0.4 0.2 1.4" class="interactable"
+            visible="false"></a-cylinder>
+        <a-text id="sprayLabel" value="Spray" align="center" color="#fff" position="0.4 0.65 1.4" scale="0.6 0.6 0.6"
+            visible="false"></a-text>
+
+        <a-box id="plaster" width="0.28" height="0.08" depth="0.14" color="#f7dc6f" position="1.2 0.04 1.4"
+            class="interactable" visible="false"></a-box>
+        <a-text id="plasterLabel" value="Pleister" align="center" color="#111" position="1.2 0.6 1.4"
+            scale="0.6 0.6 0.6" visible="false"></a-text>
+
+        <!-- Ambulance -->
+        <a-entity id="ambulance" position="0 0 25" rotation="0 180 0" visible="false">
+            <a-box depth="2.5" height="1.2" width="1.6" color="#f1c40f" position="0 0.6 0"></a-box>
+            <a-box width="1.6" height="0.2" depth="0.15" color="#d35400" position="0 0.25 1.1"></a-box>
+            <a-cylinder radius="0.3" height="0.2" color="#2c3e50" rotation="90 0 0" position="0.7 0.3 1"></a-cylinder>
+            <a-cylinder radius="0.3" height="0.2" color="#2c3e50" rotation="90 0 0" position="-0.7 0.3 1"></a-cylinder>
+            <a-cylinder radius="0.3" height="0.2" color="#2c3e50" rotation="90 0 0" position="0.7 0.3 -1"></a-cylinder>
+            <a-cylinder radius="0.3" height="0.2" color="#2c3e50" rotation="90 0 0" position="-0.7 0.3 -1"></a-cylinder>
+            <a-sphere id="siren" radius="0.15" color="red" position="0 1.3 0">
+                <a-animation attribute="color" values="red;blue;red" dur="500" repeat="indefinite"></a-animation>
+            </a-sphere>
+        </a-entity>
+
+        <!-- Medics -->
+        <a-entity id="medic1" position="0.6 0 25" visible="false">
+            <a-sphere radius="0.18" color="#2ecc71" position="0 1 0"></a-sphere>
+            <a-box width="0.25" height="0.5" depth="0.2" color="#145a32" position="0 0.35 0"></a-box>
+        </a-entity>
+        <a-entity id="medic2" position="-0.6 0 25" visible="false">
+            <a-sphere radius="0.18" color="#2ecc71" position="0 1 0"></a-sphere>
+            <a-box width="0.25" height="0.5" depth="0.2" color="#145a32" position="0 0.35 0"></a-box>
+        </a-entity>
+
+        <!-- Warning triangle -->
+        <a-entity id="triangle" visible="false">
+            <a-cone radius-bottom="0.8" radius-top="0" height="1" color="#f1c40f" position="0 0.5 0"></a-cone>
+            <a-cone radius-bottom="0.6" radius-top="0" height="0.9" color="#ffffff" position="0 0.51 0"></a-cone>
+        </a-entity>
+
+        <!-- Gaze targets for safety check -->
+        <a-sphere id="lookLeft" color="#ffd166" radius="0.22" position="-1.2 1.6 6.6" class="gazeTarget"
+            visible="true"></a-sphere>
+        <a-sphere id="lookRight" color="#ffd166" radius="0.22" position="1.2 1.6 6.6" class="gazeTarget"
+            visible="true"></a-sphere>
+        <a-text id="lookHint" value="Kijk eerst links en rechts naar de balletjes om je omgeving te checken"
+            align="center" color="#fff" position="0 2 6.6" scale="0.95 0.95 0.95" visible="true"></a-text>
+
+        <!-- Lighting -->
+        <a-entity light="type: ambient; intensity: 0.8"></a-entity>
+        <a-entity light="type: directional; intensity: 0.6" position="0 10 5"></a-entity>
+    </a-scene>
+</body>
+
+</html>
