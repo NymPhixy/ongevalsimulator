@@ -1,15 +1,16 @@
 /**
- * Main Entry Point
- * Initializes the accident simulation application
+ * Project entrypoint for Vite build
+ * Moved from public/main.js so Vite processes module imports during build
  */
 
-import "../src/styles/main.css";
-import { GameController } from "../src/GameController.js";
+import "./styles/main.css";
+import { GameController } from "./GameController.js";
 
-// Register components immediately when module loads, before A-Frame scene initializes
-console.log("📦 Main.js loaded, waiting for AFRAME...");
+// The rest of this file is the same as the previous public/main.js logic,
+// but imports are relative to src/ so Vite will bundle them correctly.
 
-// Wait for AFRAME to be available (it's loaded via CDN script tag)
+console.log("📦 src/main.js loaded, waiting for AFRAME...");
+
 function waitForAFrame() {
   return new Promise((resolve) => {
     if (window.AFRAME) {
@@ -28,13 +29,9 @@ function waitForAFrame() {
 waitForAFrame().then(() => {
   console.log("✅ AFRAME loaded, initializing game controller early...");
 
-  // Initialize game controller BEFORE scene loads so components are registered
   const game = new GameController();
-
-  // Make game controller available globally
   window.gameController = game;
 
-  // Now wait for scene to be ready and start the game
   const scene = document.querySelector("a-scene");
 
   if (scene) {
@@ -47,8 +44,8 @@ waitForAFrame().then(() => {
     console.error("❌ A-Frame scene not found!");
   }
 
-  // Small helper to show a persistent, visible toast when VR can't start.
-  // Prefers the game's UIManager if available, otherwise falls back to a DOM toast.
+  let toast = null;
+
   function showVrMessage(message, autoHide = true) {
     try {
       if (
@@ -56,14 +53,26 @@ waitForAFrame().then(() => {
         window.gameController.uiManager &&
         typeof window.gameController.uiManager.showFeedback === "function"
       ) {
-        window.gameController.uiManager.showFeedback(message, false);
+        // Prefer using the app's UI manager when available
+        try {
+          window.gameController.uiManager.showFeedback(message);
+        } catch (e) {
+          console.warn("UIManager.showFeedback failed", e);
+        }
+        if (autoHide) {
+          setTimeout(() => {
+            try {
+              if (window.gameController.uiManager.hideFeedback)
+                window.gameController.uiManager.hideFeedback();
+            } catch (e) {}
+          }, 4200);
+        }
         return;
       }
     } catch (e) {
-      console.warn("showVrMessage: uiManager call failed", e);
+      console.warn("showVrMessage ui manager check failed", e);
     }
 
-    let toast = document.getElementById("vrToast");
     if (!toast) {
       toast = document.createElement("div");
       toast.id = "vrToast";
@@ -95,20 +104,17 @@ waitForAFrame().then(() => {
     }
   }
 
-  // Wire up VR button (added to index.html). This triggers A-Frame's enterVR flow.
   const vrBtn = document.getElementById("enterVR");
 
   if (vrBtn) {
     vrBtn.addEventListener("click", async () => {
       console.log("🔘 enterVR button clicked");
 
-      // Prevent duplicate requests
       if (window.__xrRequestInProgress) {
         console.log("⏳ XR request already in progress, ignoring click");
         return;
       }
 
-      // Debug: print renderer XR session state and connected gamepads
       try {
         const rendererSession =
           scene &&
@@ -145,14 +151,6 @@ waitForAFrame().then(() => {
       window.__xrRequestInProgress = true;
       vrBtn.disabled = true;
       try {
-        // Prefer using the controlled WebXR flow below when possible. Calling
-        // `scene.enterVR()` too early can trigger A-Frame/renderer internal
-        // session creation and race with our explicit requestSession calls,
-        // which can lead to "already an existing immersive session" errors.
-        // Therefore we only use `scene.enterVR()` as a last-resort fallback
-        // after checking navigator.xr support.
-
-        // Check support first
         if (
           !navigator.xr ||
           typeof navigator.xr.isSessionSupported !== "function"
@@ -174,7 +172,6 @@ waitForAFrame().then(() => {
           return;
         }
 
-        // Try requesting session with some optional features first (improves compatibility)
         const sessionOptionsList = [
           {
             optionalFeatures: ["local-floor", "bounded-floor", "hand-tracking"],
@@ -199,8 +196,6 @@ waitForAFrame().then(() => {
               name,
               msg
             );
-
-            // If the runtime indicates an existing immersive session, try letting A-Frame attach to it.
             if (msg && /already an existing immersive session/i.test(msg)) {
               console.log(
                 "ℹ️ Runtime reports an existing immersive session — attempting to let A-Frame attach via scene.enterVR()"
@@ -215,12 +210,8 @@ waitForAFrame().then(() => {
                   console.warn("scene.enterVR() fallback failed", e);
                 }
               }
-              // Stop trying other options — either we attached or we can't.
               break;
             }
-
-            // Not an 'already existing session' message: continue trying other option sets
-            // NotSupportedError will fall through to try simpler option sets in the loop.
           }
         }
 
@@ -230,7 +221,6 @@ waitForAFrame().then(() => {
           return;
         }
 
-        // Attach session to renderer or schedule on renderstart
         if (
           scene &&
           scene.renderer &&
@@ -271,7 +261,6 @@ waitForAFrame().then(() => {
           );
         }
 
-        // Listen for session end to re-enable button
         try {
           session.addEventListener("end", () => {
             console.log("ℹ️ XR session ended");
@@ -280,7 +269,6 @@ waitForAFrame().then(() => {
           });
         } catch (e) {
           console.warn("Could not attach end listener to session", e);
-          // fallback: re-enable after a delay
           setTimeout(() => {
             window.__xrRequestInProgress = false;
             vrBtn.disabled = false;
@@ -292,7 +280,6 @@ waitForAFrame().then(() => {
           "Fout bij starten VR: " + (err && err.message ? err.message : err)
         );
       } finally {
-        // If still marked in progress and no session started, clear and re-enable
         if (window.__xrRequestInProgress) {
           window.__xrRequestInProgress = false;
           vrBtn.disabled = false;
@@ -301,7 +288,6 @@ waitForAFrame().then(() => {
     });
   }
 
-  // Debug overlay for remote debugging (enabled when hostname contains 'netlify' or ?debug=1)
   try {
     const showDebug =
       location.search.indexOf("debug=1") !== -1 ||
